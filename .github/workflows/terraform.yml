@@ -39,7 +39,12 @@ jobs:
 
     - name: 'Set up Cloud SDK'
       uses: 'google-github-actions/setup-gcloud@v1'
-    
+
+   - name: Gcloud Stuff
+      shell: bash
+      run: |
+          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+          gcloud services enable container
     # Onboard Cloud Environment to Snyk Cloud
 
     - name: Onboard Cloud Environment to Snyk Cloud
