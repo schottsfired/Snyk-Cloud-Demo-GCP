@@ -6,13 +6,18 @@ This is a vulnerable by design repository for demonstrating Snyk Cloud. Do not d
 
 To use with ACG - <b> you must first login to the GCP console and accept the terms and enable the cloud resource manager API</b>
 
+Once logged in, go here: https://console.cloud.google.com/apis/api/monitoring.googleapis.com/ to enable the cloud resource manager API.
+
+To locate the project ID, look in the GCP credentials string.
+
 Add the following Github Variables:
 
 ```
 SNYK_ORG
 SNYK_TOKEN
-AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY
+GCP_CREDENTIALS
+GCP_SERVICE_ACCOUNT
+GCP_PROJECT_ID
 ```
 
 
