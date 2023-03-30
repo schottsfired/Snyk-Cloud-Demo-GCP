@@ -20,7 +20,6 @@ jobs:
       SNYK_IAC_CAPTURE_ORG: ${{ secrets.SNYK_ORG}}
       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} 
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
         
     # Checkout Code   
@@ -28,15 +27,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-
-        
-    # Install the latest version of Terraform CLI
-
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        cli_config_credentials_token: ${{ secrets.TERRAFORM_API_KEY }}
-        terraform_wrapper: false
 
     
     ###### Configure Snyk Environment ######
