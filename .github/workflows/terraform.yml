@@ -77,6 +77,7 @@ jobs:
     - name: Deploy Snyk Cloud Terraform/IAM
       shell: bash
       run: |
+        cd temp
         terraform init
         terraform apply -var="project_id=${{ secrets.GCP_PROJECT_ID }}" -auto-approve
         out=$(terraform output -json |jq .service_account_email.value | tr -d \" )
