@@ -64,7 +64,7 @@ jobs:
       shell: bash
       run: |
         cd temp
-        sed -i '1s;^;terraform { cloud { organization = "${{ secrets.TF_ORG }}" workspaces { name = "${{ secrets.TF_WS }}" }}}\n;' snyk_provision.tf
+        sed -i '1s;^;terraform { \ncloud { \norganization = "${{ secrets.TF_ORG }}" \nworkspaces { \nname = "${{ secrets.TF_WS }}" \n}\n}\n}\n;' snyk_provision.tf
         cat snyk_provision.tf
 
     # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
