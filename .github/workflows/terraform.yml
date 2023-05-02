@@ -63,6 +63,7 @@ jobs:
     - name: Insert Terraform Cloud Organization & Workspace into TF File
       shell: bash
       run: |
+        cd temp
         sed -i '1s;^;terraform { cloud { organization = "${{ secrets.TF_ORG }}" workspaces { name = "${{ secrets.TF_WS }}" }}}\n;' snyk_provision.tf
         cat snyk_provision.tf
 
