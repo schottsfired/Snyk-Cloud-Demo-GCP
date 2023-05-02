@@ -42,8 +42,7 @@ jobs:
           gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
           gcloud services enable container
 
-    # Onboard Cloud Environment to Snyk Cloud
-    - name: Onboard Cloud Environment to Snyk Cloud
+    - name: Get Snyk Cloud Terraform/IAM
       shell: bash
       run: |
         mkdir temp
@@ -60,11 +59,27 @@ jobs:
                 "type": "permissions"
             }
         }' | jq -r .data.attributes.data > snyk_provision.tf
+
+    - name: Insert Terraform Cloud Organization & Workspace into TF File
+      shell: bash
+      run: |
+        sed -i '1s;^;terraform { cloud { organization = "${{ secrets.TF_ORG }}" workspaces { name = "${{ secrets.TF_WS }}" }}}\n;' snyk_provision.tf
+        cat snyk_provision.tf
+
+    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+    - name: Setup Terraform Cloud
+      uses: hashicorp/setup-terraform@v2
+      with:
+        cli_config_credentials_token: ${{ secrets.TERRAFORM_API_KEY }}
+        terraform_wrapper: false
+    
+    - name: Deploy Snyk Cloud Terraform/IAM
+      shell: bash
+      run: |
         terraform init
         terraform apply -var="project_id=${{ secrets.GCP_PROJECT_ID }}" -auto-approve
         out=$(terraform output -json |jq .service_account_email.value | tr -d \" )
         echo "SERVICE_ACCOUNT=$(echo "${out}")" >> $GITHUB_ENV
-        sleep 10
 
     # Cleanup
     - name: Cleanup
