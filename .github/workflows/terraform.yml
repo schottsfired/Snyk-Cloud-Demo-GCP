@@ -9,29 +9,25 @@ on:
 
 jobs:
   Pipeline-Job:
+
     # Configure Environment
-    
     name: 'Deploy Terraform'
     runs-on: ubuntu-latest
     env:
-   # These variables are required
+      # These variables are required
       SNYK_IAC_CAPTURE_API_REST_URL: https://api.snyk.io
       SNYK_IAC_CAPTURE_API_REST_TOKEN: ${{ secrets.SNYK_TOKEN }} 
       SNYK_IAC_CAPTURE_ORG: ${{ secrets.SNYK_ORG}}
       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
         
     # Checkout Code   
-
     steps:
     - name: Checkout
       uses: actions/checkout@v3
 
-    
     ###### Configure Snyk Environment ######
 
     # Define AWS Configuration for onboarding
-
     - id: 'auth'
       uses: 'google-github-actions/auth@v1'
       with:
@@ -45,8 +41,8 @@ jobs:
       run: |
           gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
           gcloud services enable container
-    # Onboard Cloud Environment to Snyk Cloud
 
+    # Onboard Cloud Environment to Snyk Cloud
     - name: Onboard Cloud Environment to Snyk Cloud
       shell: bash
       run: |
@@ -70,36 +66,27 @@ jobs:
         echo "SERVICE_ACCOUNT=$(echo "${out}")" >> $GITHUB_ENV
         sleep 10
 
-
     # Cleanup
-
     - name: Cleanup
       shell: bash
       run: |
         cd ../    
         rm -rf temp
 
-
     # Create Snyk Cloud Environment
-
     - name: Create Snyk Cloud Environment
       run : |
            curl -X POST \ 'https://api.snyk.io/rest/orgs/YOUR-ORGANIZATION-ID/cloud/environments?version=2022-12-21~beta' \ -H 'Authorization: token ${{ secrets.SNYK_TOKEN }}' \ -H 'Content-Type:application/vnd.api+json' -d '{ "data": { "type": "environments", "attributes": { "options": { "service_account_email": "${{ secrets.GCP_SERVICE_EMAIL }}", "project_id": "${{ secrets.GCP_PROJECT_ID }}" }, "kind": "google" } } }'
 
-
-
     # Get Snyk Cloud Environment ID
-
     - name: Get Snyk Cloud Environment ID
       run : |
            out=$(curl -X GET 'https://api.snyk.io/rest/orgs/${{ secrets.SNYK_ORG }}/cloud/environments?version=2022-12-21~beta' -H 'Authorization: token ${{ secrets.SNYK_TOKEN }}' | jq -c --arg key "aws" '.data[] | select (.attributes.kind=="google")' | jq .id | tr -d \" )
            echo "SNYK_CLOUD_ID=$(echo "${out}")" >> $GITHUB_ENV
            
-
     ##### Deploy and Scan Vulnerable Terraform #####
 
     # Report on IaC
-
     - name: Run Snyk Report
       run : |
            curl -sSL -o /usr/local/bin/snyk https://static.snyk.io/cli/latest/snyk-linux
@@ -107,25 +94,18 @@ jobs:
            snyk iac test --report --target-reference=$(git branch --show-current) --org=${{ secrets.SNYK_ORG }} -d 
       continue-on-error: true
 
-
     # Trigger Terraform Cloud to initialize vulnerable environment    
-
     - name: Terraform Init
       run: terraform init
 
-
     # Deploy Vulnerable Environment
-  
     - name: Terraform Apply
       run: terraform apply -auto-approve
 
-
     # Kick off Snyk Cloud Rescan
-
     - name: Rescan Cloud Environment
       run : |
           curl -X POST \
           'https://api.snyk.io/rest/orgs/${{ secrets.SNYK_ORG }}/cloud/scans?version=2022-12-21~beta' \
           -H 'Authorization: token ${{ secrets.SNYK_TOKEN }}' \
           -H "Content-Type:application/vnd.api+json"  -d '{ "data": { "relationships": { "environment": { "data": { "id": "${{ env.SNYK_CLOUD_ID }}", "type": "environment" } } }, "type": "resource" } }'
-                                                      
