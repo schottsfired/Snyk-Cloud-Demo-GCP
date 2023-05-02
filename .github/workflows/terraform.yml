@@ -61,7 +61,7 @@ jobs:
             }
         }' | jq -r .data.attributes.data > snyk_provision.tf
         terraform init
-        terraform apply -auto-approve
+        terraform apply -var="project_id=${{ secrets.GCP_PROJECT_ID }}" -auto-approve
         out=$(terraform output -json |jq .service_account_email.value | tr -d \" )
         echo "SERVICE_ACCOUNT=$(echo "${out}")" >> $GITHUB_ENV
         sleep 10
